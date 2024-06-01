@@ -1,0 +1,101 @@
+import requests, json
+
+
+class WeatherInfo:
+    def __init__(self, cityname):
+        self.cityname = cityname
+
+    def setKey(self, key):
+        self.key = key
+
+    def Kelvin_to_Fahrenheit(self,k):
+        return round((k - 273.5) * (9.0/5.0) + 32)
+
+    def updateWeather(self):
+        base_url = "http://api.openweathermap.org/data/2.5/weather?"
+        complete_url = base_url + "appid=" + self.key + "&q=" + self.cityname 
+        response = requests.get(complete_url)
+        jsondata = response.json()
+        if jsondata["cod"] != "Error":
+            maintag = jsondata["main"]
+            self.current_pressure = int(maintag["pressure"])
+            kelvin_temp = float(maintag["temp"])
+            self.current_temperature = self.Kelvin_to_Fahrenheit(kelvin_temp)
+            self.current_humidiy = int(maintag["humidity"])
+            weather_tag = jsondata["weather"]
+            self.weather_description = str(weather_tag[0]["description"])
+            self.weather_feelsLike = float(maintag["feels_like"])
+            self.wind_speed = float(jsondata["wind"]["speed"])
+            return True
+        else:
+            return False
+
+    def getDescription(self):
+        return self.weather_description
+
+    def getTemp(self):
+        return self.current_temperature
+
+    def getFeelsLike(self):
+        return self.weather_feelsLike
+
+    def getHumidity(self):
+        return self.current_humidiy
+
+    def getPressure(self):
+        return self.current_pressure
+
+    def getWindSpeed(self):
+        return self.wind_speed
+
+
+    def getWindInfo(self):
+        if self.wind_speed < 1:
+            return "Calm"
+        if 1 < self.wind_speed < 3:
+            return "Light air "
+        if 3 < self.wind_speed < 7:
+            return "Light breeze"
+        if 7 < self.wind_speed < 12:
+            return "Gentle breeze"
+        if 12 < self.wind_speed < 18:
+            return "Moderate breeze"
+        if 18 < self.wind_speed < 24:
+            return "Fresh breeze"
+        if 24 < self.wind_speed < 31:
+            return "Strong breeze"
+        if 31 < self.wind_speed < 38:
+            return "High wind"
+        if 38 < self.wind_speed < 46:
+            return "Gale"
+        if 46 < self.wind_speed < 54:
+            return "Strong gale"
+        if 54 < self.wind_speed < 63:
+            return "Storm"
+        if 63 < self.wind_speed < 72:
+            return "Violent storm"
+        if self.wind_speed > 72:
+            return "Hurricane"
+
+
+if __name__ == "__main__":
+    while True:
+        city_name = str(input("Enter city:"))
+        city_name = city_name.strip()
+        if bool(city_name):
+            WeatherInfoObj = WeatherInfo(city_name)
+        else:
+            WeatherInfoObj = WeatherInfo("Orlando")
+        WeatherInfoObj.setKey("2805699aef588cbe0f3f56969e91ff41")
+        success = WeatherInfoObj.updateWeather()
+        if success == True:
+            print("The current weather in ", city_name, " is ", WeatherInfoObj.getDescription(), " with ",
+                  WeatherInfoObj.getHumidity(), "% humidity.")
+            print("Temperature: ", WeatherInfoObj.getTemp(), "degrees Fahrenheit")
+            
+        else:
+            print("Invalid City")
+        option = input(" Would you like to enter another city? (Y/N): ")
+        if option.lower() == "n":
+            break
+    print("Have a nice day.")
